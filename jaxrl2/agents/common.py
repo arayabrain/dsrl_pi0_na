@@ -98,6 +98,39 @@ def sample_actions_jit(
     return rng, dist.sample(seed=key)
 
 
+@partial(jax.jit, static_argnames="actor_apply_fn")
+def sample_actions_seeded_jit(
+    seed,
+    actor_apply_fn: Callable[..., distrax.Distribution],
+    actor_params: Params,
+    observations: np.ndarray,
+    actor_batch_stats: Any,
+) -> jnp.ndarray:
+    input_collections = {'params': actor_params}
+    if actor_batch_stats is not None:
+        input_collections['batch_stats'] = actor_batch_stats
+    dist = actor_apply_fn(input_collections, observations)
+    return dist.sample(seed=seed)
+
+
+@partial(jax.jit, static_argnames='actor_apply_fn')
+def sample_actions_with_log_probs_jit(
+        rng: PRNGKey, actor_apply_fn: Callable[..., distrax.Distribution],
+        actor_params: Params,
+        observations: np.ndarray,
+        actor_batch_stats: Any) -> Tuple[PRNGKey, jnp.ndarray, jnp.ndarray]:
+    """Sample actions and compute their log probabilities."""
+    input_collections = {'params': actor_params}
+    if actor_batch_stats is not None:
+        input_collections['batch_stats'] = actor_batch_stats
+    dist = actor_apply_fn(input_collections, observations)
+    rng, key = jax.random.split(rng)
+    # Use sample_and_log_prob to correctly handle transformed distributions (e.g., TanhTransformed)
+    # This avoids numerical issues with computing log_prob on already-transformed samples
+    actions, log_probs = dist.sample_and_log_prob(seed=key)
+    return rng, actions, log_probs
+
+
 class ModuleDict(nn.Module):
     """
     from https://github.com/rail-berkeley/jaxrl_minimal/blob/main/jaxrl_m/common/common.py#L33

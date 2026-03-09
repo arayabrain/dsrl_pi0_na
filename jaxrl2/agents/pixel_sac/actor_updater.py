@@ -10,7 +10,7 @@ from jaxrl2.types import Params, PRNGKey
 
 
 def update_actor(key: PRNGKey, actor: TrainState, critic: TrainState,
-                 temp: TrainState, batch: DatasetDict, cross_norm:bool=False, critic_reduction:str='min') -> Tuple[TrainState, Dict[str, float]]:
+                 temp: TrainState, batch: DatasetDict, cross_norm:bool=False, critic_reduction:str='min', noise_scale:float=1.0) -> Tuple[TrainState, Dict[str, float]]:
     
     key, key_act = jax.random.split(key, num=2)
 
@@ -37,6 +37,8 @@ def update_actor(key: PRNGKey, actor: TrainState, critic: TrainState,
 
         
         actions, log_probs = dist.sample_and_log_prob(seed=key_act)
+        # Scale actions externally after computing log_prob on unscaled noise
+        actions = actions * noise_scale
 
         if hasattr(critic, 'batch_stats') and critic.batch_stats is not None:
             qs, _ = critic.apply_fn({'params': critic.params, 'batch_stats': critic.batch_stats}, batch['observations'],
