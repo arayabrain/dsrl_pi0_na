@@ -31,3 +31,4 @@ gym-aloha==0.1.1
 bddl==3.5.0
 tf_keras==2.19.0
 moviepy==1.0.3
+videoio

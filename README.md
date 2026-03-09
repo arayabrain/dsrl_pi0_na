@@ -66,6 +66,30 @@ bash examples/scripts/run_aloha.sh
 ### Training Logs
 We provide sample W&B runs and logs: https://wandb.ai/mitsuhiko/DSRL_pi0_public
 
+## Training (NA — Noise aliasing variant)
+The Noise-Aliasing (NA) variant steers the pre-trained policy by learning an action critic in the **environment action space** and then distill that into a noise space critic.
+
+Aloha simulation:
+```
+bash examples/scripts/run_aloha_sim_na.sh
+```
+
+### Key NA Configuration Options
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `use_local_policy` | `1` | Use local policy (`1`) or remote websocket (`0`) |
+| `put_kv_cache_on_cpu` | `1` | Offload KV cache to CPU to save GPU memory |
+| `flow_integration_steps` | `10` | Euler integration steps for flow policy |
+| `action_critic_steps` | `20` | Action critic gradient steps per training cycle |
+| `noise_critic_steps` | `10` | Noise critic gradient steps per training cycle |
+| `noise_actor_steps` | `5` | Noise actor gradient steps per training cycle |
+| `grl_noise_sample` | `0` | Sample half of distillation noise from the noise actor |
+| `train_all_together` | `0` | If `1`, train all components jointly (UTD = `multi_grad_step`) |
+| `noise_scale_inside` | `0` | If `1`, noise scaling inside tanh distribution; if `0`, external scaling |
+| `query_freq` | `50` | How often (in env steps) to query the noise actor |
+| `action_chunk_size` | `50` | Number of actions per chunk sent to the environment |
+| `max_timesteps` | `400` | Maximum environment steps per episode |
+
 ## Training (Real)
 For real-world experiments, we use the remote hosting feature from pi0 (see [here](https://github.com/Physical-Intelligence/openpi/blob/main/docs/remote_inference.md)) which enables us to host the pi0 model on a higher-spec remote server, in case the robot's client machine is not powerful enough. 
 
