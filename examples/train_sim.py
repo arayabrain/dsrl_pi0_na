@@ -16,9 +16,6 @@ import gymnasium as gym
 import gym_aloha
 from gym.spaces import Dict, Box
 
-from libero.libero import benchmark
-from libero.libero import get_libero_path
-from libero.libero.envs import OffScreenRenderEnv
 
 from jaxrl2.data import ReplayBuffer
 from jaxrl2.utils.wandb_logger import WandBLogger, create_exp_name
@@ -36,6 +33,10 @@ home_dir = os.environ['HOME']
 compilation_cache.initialize_cache(os.path.join(home_dir, 'jax_compilation_cache'))
 
 def _get_libero_env(task, resolution, seed):
+    from libero.libero import benchmark
+    from libero.libero import get_libero_path
+    from libero.libero.envs import OffScreenRenderEnv
+
     """Initializes and returns the LIBERO environment, along with the task description."""
     task_description = task.language
     task_bddl_file = pathlib.Path(get_libero_path("bddl_files")) / task.problem_folder / task.bddl_file
@@ -146,10 +147,10 @@ def main(variant):
 
     if variant.env == 'libero':
         config = openpi_config.get_config("pi0_libero")
-        checkpoint_dir = download.maybe_download("s3://openpi-assets/checkpoints/pi0_libero")
+        checkpoint_dir = download.maybe_download("gs://openpi-assets/checkpoints/pi0_libero")
     elif variant.env == 'aloha_cube':
         config = openpi_config.get_config("pi0_aloha_sim")
-        checkpoint_dir = download.maybe_download("s3://openpi-assets/checkpoints/pi0_aloha_sim")
+        checkpoint_dir = download.maybe_download("gs://openpi-assets/checkpoints/pi0_aloha_sim")
     else:
         raise NotImplementedError()
     agent_dp = policy_config.create_trained_policy(config, checkpoint_dir)

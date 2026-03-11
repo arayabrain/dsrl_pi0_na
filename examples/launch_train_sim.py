@@ -1,5 +1,10 @@
 import argparse
 import sys
+import os
+
+# Ensure the project root is on sys.path so absolute imports work
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from examples.train_sim import main
 from jaxrl2.utils.launch_util import parse_training_args
 
